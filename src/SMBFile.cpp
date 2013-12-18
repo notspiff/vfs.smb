@@ -132,10 +132,19 @@ struct SMBContext
   }
 };
 
-void* Open(const char* url, const char* hostname,
-           const char* filename2, unsigned int port,
-           const char* options, const char* username,
-           const char* password)
+static std::string GetAuthenticatedPath(VFSURL* url)
+{
+  bool res = XBMC->AuthenticateURL(url);
+  std::string result = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename, url->username, url->password);
+  if (res)
+  {
+    XBMC->FreeString(url->username);
+    XBMC->FreeString(url->password);
+  }
+  return result;
+}
+
+void* Open(VFSURL* url)
 {
   CSMB::Get().Init();
   CSMB::Get().AddActiveConnection();
@@ -234,14 +243,11 @@ static bool IsValidFile(const std::string& strFileName)
   return true;
 }
 
-bool Exists(const char* url, const char* hostname,
-            const char* filename, unsigned int port,
-            const char* options, const char* username,
-            const char* password)
+bool Exists(VFSURL* url)
 {
   // we can't open files like smb://file.f or smb://server/file.f
   // if a file matches the if below return false, it can't exist on a samba share.
-  if (!IsValidFile(filename))
+  if (!IsValidFile(url.filename))
     return false;
 
   CSMB::Get().Init();
