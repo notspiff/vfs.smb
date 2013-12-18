@@ -195,7 +195,7 @@ void CSMB::PurgeEx(const std::string& hostname, const std::string& filename)
   std::string strShare = filename.substr(0, filename.find('/'));
 
   m_strLastShare = strShare;
-  m_strLastHost = url.GetHostName();
+  m_strLastHost = hostname;
 }
 
 static void Tokenize(const std::string& str, std::vector<std::string>& tokens,
