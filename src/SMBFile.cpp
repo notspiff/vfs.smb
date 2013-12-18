@@ -138,8 +138,8 @@ static std::string GetAuthenticatedPath(VFSURL* url)
   std::string result = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename, url->username, url->password);
   if (res)
   {
-    XBMC->FreeString(url->username);
-    XBMC->FreeString(url->password);
+    XBMC->FreeString((char*)url->username);
+    XBMC->FreeString((char*)url->password);
   }
   return result;
 }
