@@ -222,7 +222,7 @@ int64_t Seek(void* context, int64_t iFilePosition, int iWhence)
   if (ctx->fd == -1)
     return -1;
 
-  PLATFORM::ClockObject lock(CSMB::Get()); // Init not called since it has to be "inited" by now
+  PLATFORM::CLockObject lock(CSMB::Get()); // Init not called since it has to be "inited" by now
   CSMB::Get().SetActivityTime();
   int64_t pos = smbc_lseek(ctx->fd, iFilePosition, iWhence);
 
@@ -248,7 +248,7 @@ bool Exists(VFSURL* url)
 {
   // we can't open files like smb://file.f or smb://server/file.f
   // if a file matches the if below return false, it can't exist on a samba share.
-  if (!IsValidFile(url.filename))
+  if (!IsValidFile(url->filename))
     return false;
 
   CSMB::Get().Init();
