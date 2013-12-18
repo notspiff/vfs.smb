@@ -412,7 +412,7 @@ int Write(void* context, const void* lpBuf, int64_t uiBufSize)
   // lpBuf can be safely casted to void* since xmbc_write will only read from it.
   CSMB::Get().Init();
   PLATFORM::CLockObject lock(CSMB::Get());
-  dwNumberOfBytesWritten = smbc_write(m_fd, (void*)lpBuf, uiBufSize);
+  dwNumberOfBytesWritten = smbc_write(ctx->fd, (void*)lpBuf, uiBufSize);
 
   return (int)dwNumberOfBytesWritten;
 }
