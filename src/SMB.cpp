@@ -221,7 +221,9 @@ static void Tokenize(const std::string& str, std::vector<std::string>& tokens,
 
 
 
-std::string CSMB::URLEncode(const std::string& url)
+std::string CSMB::URLEncode(const std::string& domain, 
+                            const std::string& hostname, const std::string& filename,
+                            const std::string& username, const std::string& password)
 {
   /* due to smb wanting encoded urls we have to build it manually */
 
