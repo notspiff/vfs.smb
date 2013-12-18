@@ -25,6 +25,7 @@
 #include <sstream>
 
 #include "SMB.h"
+#include <libsmbclient.h>
 
 ADDON::CHelper_libXBMC_addon *XBMC           = NULL;
 
