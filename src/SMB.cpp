@@ -311,7 +311,7 @@ void CSMB::AddActiveConnection()
 
 void CSMB::AddIdleConnection()
 {
-  PLAFORM::CLockObject lock(*this);
+  PLATFORM::CLockObject lock(*this);
   m_OpenConnections--;
   /* If we close a file we reset the idle timer so that we don't have any wierd behaviours if a user
      leaves the movie paused for a long while and then press stop */
