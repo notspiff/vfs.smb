@@ -288,7 +288,7 @@ void CSMB::CheckIfIdle()
       else
       {
         XBMC->Log(ADDON::LOG_INFO, "Samba is idle. Closing the remaining connections");
-        smb.Deinit();
+        Deinit();
       }
     }
   }
