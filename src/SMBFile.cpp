@@ -265,10 +265,7 @@ bool Exists(VFSURL* url)
   return true;
 }
 
-int Stat(const char* url, const char* hostname,
-         const char* filename2, unsigned int port,
-         const char* options, const char* username,
-         const char* password, struct __stat64* buffer)
+int Stat(VFSURL* url, struct __stat64* buffer)
 {
   CSMB::Get().Init();
   std::string strFileName = GetAuthenticatedPath(url);
@@ -308,10 +305,7 @@ void DisconnectAll()
   CSMB::Get().Deinit();
 }
 
-bool DirectoryExists(const char* url, const char* hostname,
-                     const char* filename, unsigned int port,
-                     const char* options, const char* username,
-                     const char* password)
+bool DirectoryExists(VFSURL* url)
 {
   PLATFORM::CLockObject lock(CSMB::Get());
   CSMB::Get().Init();
@@ -319,8 +313,11 @@ bool DirectoryExists(const char* url, const char* hostname,
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(domain, hostname, filename,
-                                                  username, password);
+  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+                                                  url->username, url->password);
+
+  XBMC->FreeString((char*)url->username);
+  XBMC->FreeString((char*)url->password);
 
   struct stat info;
   if (smbc_stat(strFileName.c_str(), &info) != 0)
@@ -329,22 +326,16 @@ bool DirectoryExists(const char* url, const char* hostname,
   return (info.st_mode & S_IFDIR) ? true : false;
 }
 
-void* GetDirectory(const char* url, const char* hostname,
-                   const char* filename, unsigned int port,
-                   const char* options, const char* username,
-                   const char* password, VFSDirEntry** items,
-                   int* num_items)
+void* GetDirectory(VFSURL* url, VFSDirEntry** items, int* num_items)
 {
+  return NULL;
 }
 
 void FreeDirectory(void* items)
 {
 }
 
-bool CreateDirectory(const char* url, const char* hostname,
-                     const char* filename, unsigned int port,
-                     const char* options, const char* username,
-                     const char* password)
+bool CreateDirectory(VFSURL* url)
 {
   bool success = true;
   PLATFORM::CLockObject lock(CSMB::Get());
@@ -353,8 +344,11 @@ bool CreateDirectory(const char* url, const char* hostname,
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(domain, hostname, filename,
-                                                  username, password);
+  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+                                                  url->username, url->password);
+
+  XBMC->FreeString((char*)url->username);
+  XBMC->FreeString((char*)url->password);
 
   int result = smbc_mkdir(strFileName.c_str(), 0);
   success = (result == 0 || EEXIST == errno);
@@ -364,10 +358,7 @@ bool CreateDirectory(const char* url, const char* hostname,
   return success;
 }
 
-bool RemoveDirectory(const char* url, const char* hostname,
-                     const char* filename, unsigned int port,
-                     const char* options, const char* username,
-                     const char* password)
+bool RemoveDirectory(VFSURL* url)
 {
   PLATFORM::CLockObject lock(CSMB::Get());
   CSMB::Get().Init();
@@ -375,8 +366,11 @@ bool RemoveDirectory(const char* url, const char* hostname,
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(domain, hostname,
-                                                  filename, username, password);
+  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+                                                  url->username, url->password);
+
+  XBMC->FreeString((char*)url->username);
+  XBMC->FreeString((char*)url->password);
 
   int result = smbc_rmdir(strFileName.c_str());
 
@@ -423,14 +417,10 @@ int Write(void* context, const void* lpBuf, int64_t uiBufSize)
   return (int)dwNumberOfBytesWritten;
 }
 
-bool Delete(const char* url, const char* hostname,
-            const char* filename, unsigned int port,
-            const char* options, const char* username,
-            const char* password)
+bool Delete(VFSURL* url)
 {
   CSMB::Get().Init();
-  std::string strFile = GetAuthenticatedPath(domain, hostname,
-                                             filename, username, password);
+  std::string strFile = GetAuthenticatedPath(url);
 
   PLATFORM::CLockObject lock(CSMB::Get());
 
@@ -442,20 +432,11 @@ bool Delete(const char* url, const char* hostname,
   return (result == 0);
 }
 
-bool Rename(const char* url, const char* hostname,
-            const char* filename, unsigned int port,
-            const char* options, const char* username,
-            const char* password,
-            const char* url2, const char* hostname2,
-            const char* filename2, unsigned int port2,
-            const char* options2, const char* username2,
-            const char* password2)
+bool Rename(VFSURL* url, VFSURL* url2)
 {
   CSMB::Get().Init();
-  std::string strFile = GetAuthenticatedPath(domain, hostname,
-                                             filename, username, password);
-  std::string strFileNew = GetAuthenticatedPath(domain2, hostname2, filename2,
-                                               username2, password2);
+  std::string strFile = GetAuthenticatedPath(url);
+  std::string strFileNew = GetAuthenticatedPath(url2);
   PLATFORM::CLockObject lock(CSMB::Get());
 
   int result = smbc_rename(strFile.c_str(), strFileNew.c_str());
@@ -466,10 +447,7 @@ bool Rename(const char* url, const char* hostname,
   return (result == 0);
 }
 
-void* OpenForWrite(const char* url, const char* hostname,
-                   const char* filename, unsigned int port,
-                   const char* options, const char* username,
-                   const char* password, bool bOverWrite)
+void* OpenForWrite(VFSURL* url, bool bOverWrite)
 { 
   CSMB::Get().Init();
   // we can't open files like smb://file.f or smb://server/file.f
@@ -477,8 +455,7 @@ void* OpenForWrite(const char* url, const char* hostname,
   if (!IsValidFile(filename))
     return NULL;
 
-  std::string strFileName = GetAuthenticatedPath(domain, hostname,
-                                                 filename, username, password);
+  std::string strFileName = GetAuthenticatedPath(url);
   PLATFORM::CLockObject lock(CSMB::Get());
 
   SMBContext* result = new SMBContext;
@@ -504,11 +481,7 @@ void* OpenForWrite(const char* url, const char* hostname,
   return result;
 }
 
-void* ContainsFiles(const char* url, const char* hostname,
-                    const char* filename2, unsigned int port,
-                    const char* options, const char* username,
-                    const char* password,
-                    VFSDirEntry** items, int* num_items)
+void* ContainsFiles(VFSURL* url, VFSDirEntry** items, int* num_items)
 {
   return NULL;
 }
