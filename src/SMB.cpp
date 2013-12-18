@@ -227,7 +227,7 @@ std::string CSMB::URLEncode(const std::string& domain,
 {
   /* due to smb wanting encoded urls we have to build it manually */
 
-  CStdString flat = "smb://";
+  std::string flat = "smb://";
 
   if(!domain.empty())
   {
