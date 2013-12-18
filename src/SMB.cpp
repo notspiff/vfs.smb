@@ -305,7 +305,7 @@ void CSMB::SetActivityTime()
    This makes the idle timer not count if a movie is paused for example */
 void CSMB::AddActiveConnection()
 {
-  PLATFORM::ClockObject lock(*this);
+  PLATFORM::CLockObject lock(*this);
   m_OpenConnections++;
 }
 
