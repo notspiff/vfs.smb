@@ -189,7 +189,7 @@ void CSMB::Purge()
  *
  * We try to avoid lot's of purge commands because it slow samba down.
  */
-void CSMB::PurgeEx(const std::string& hostname, const std::string filename)
+void CSMB::PurgeEx(const std::string& hostname, const std::string& filename)
 {
   PLATFORM::CLockObject lock(*this);
   std::string strShare = filename.substr(0, filename.find('/'));
