@@ -452,7 +452,7 @@ void* OpenForWrite(VFSURL* url, bool bOverWrite)
   CSMB::Get().Init();
   // we can't open files like smb://file.f or smb://server/file.f
   // if a file matches the if below return false, it can't exist on a samba share.
-  if (!IsValidFile(filename))
+  if (!IsValidFile(url->filename))
     return NULL;
 
   std::string strFileName = GetAuthenticatedPath(url);
