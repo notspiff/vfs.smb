@@ -45,7 +45,7 @@ SMBCSRV* xb_smbc_cache(SMBCCTX* c, const char* server, const char* share, const 
 
 CSMB& CSMB::Get()
 {
-  static CSMB instance;
+  static CSMB instance();
 
   return instance;
 }
