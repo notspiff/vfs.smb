@@ -49,10 +49,8 @@ public:
 
   int32_t ConvertUnixToNT(int error);
 protected:
-  CSMB(int yo);
-  CSMB(const CSMB&);
+  CSMB();
   virtual ~CSMB();
-  const CSMB& operator=(const CSMB&);
 
   SMBCCTX *m_context;
   std::string m_strLastHost;

@@ -45,12 +45,12 @@ SMBCSRV* xb_smbc_cache(SMBCCTX* c, const char* server, const char* share, const 
 
 CSMB& CSMB::Get()
 {
-  static CSMB instance(1);
+  static CSMB instance;
 
   return instance;
 }
 
-CSMB::CSMB(int yo)
+CSMB::CSMB()
 {
   std::cout << "created yo" << std::endl;
   m_IdleTimeout = 0;
