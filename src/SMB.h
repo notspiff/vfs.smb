@@ -49,7 +49,7 @@ public:
                         const std::string& username, const std::string& password);
 
   int32_t ConvertUnixToNT(int error);
-private:
+protected:
   CSMB();
 
   SMBCCTX *m_context;
