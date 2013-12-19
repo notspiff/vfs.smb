@@ -136,7 +136,7 @@ struct SMBContext
 static std::string GetAuthenticatedPath(VFSURL* url)
 {
   bool res = XBMC->AuthenticateURL(url);
-  std::string result = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename, url->username, url->password);
+  std::string result = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename, url->username, url->password);
   if (res)
   {
     XBMC->FreeString((char*)url->username);
@@ -156,8 +156,8 @@ static bool IsValidFile(const std::string& strFileName)
 
 void* Open(VFSURL* url)
 {
-  CSMB::Get().Init();
-  CSMB::Get().AddActiveConnection();
+  CSMB2::Get().Init();
+  CSMB2::Get().AddActiveConnection();
   if (!IsValidFile(url->filename))
   {
     XBMC->Log(ADDON::LOG_INFO, "FileSmb->Open: Bad URL : '%s'",url->redacted);
@@ -165,14 +165,14 @@ void* Open(VFSURL* url)
   }
   int fd = -1;
   std::string filename = GetAuthenticatedPath(url);
-  PLATFORM::CLockObject lock(CSMB::Get());
+  PLATFORM::CLockObject lock(CSMB2::Get());
   fd = smbc_open(filename.c_str(), O_RDONLY, 0);
   if (fd == -1)
   {
     XBMC->Log(ADDON::LOG_INFO, "FileSmb->Open: Unable to open file : '%s'\nunix_err:'%x' error : '%s'", url->redacted, errno, strerror(errno));
     return NULL;
   }
-  XBMC->Log(ADDON::LOG_DEBUG,"CSmbFile::Open - opened %s, fd=%d", url->filename, fd);
+  XBMC->Log(ADDON::LOG_DEBUG,"CSMB2File::Open - opened %s, fd=%d", url->filename, fd);
   struct stat tmpBuffer;
   if (smbc_stat(filename.c_str(), &tmpBuffer) < 0)
   {
@@ -194,10 +194,10 @@ void* Open(VFSURL* url)
 bool Close(void* context)
 {
   SMBContext* ctx = (SMBContext*)context;
-  XBMC->Log(ADDON::LOG_DEBUG,"CSmbFile::Close closing fd %d", ctx->fd);
-  PLATFORM::CLockObject lock(CSMB::Get());
+  XBMC->Log(ADDON::LOG_DEBUG,"CSMB2File::Close closing fd %d", ctx->fd);
+  PLATFORM::CLockObject lock(CSMB2::Get());
   smbc_close(ctx->fd);
-  CSMB::Get().AddIdleConnection();
+  CSMB2::Get().AddIdleConnection();
 }
 
 unsigned int Read(void* context, void* lpBuf, int64_t uiBufSize)
@@ -206,8 +206,8 @@ unsigned int Read(void* context, void* lpBuf, int64_t uiBufSize)
   if (ctx->fd == -1)
     return 0;
 
-  PLATFORM::CLockObject lock(CSMB::Get()); // Init not called since it has to be "inited" by now
-  CSMB::Get().SetActivityTime();
+  PLATFORM::CLockObject lock(CSMB2::Get()); // Init not called since it has to be "inited" by now
+  CSMB2::Get().SetActivityTime();
   /* work around stupid bug in samba */
   /* some samba servers has a bug in it where the */
   /* 17th bit will be ignored in a request of data */
@@ -247,8 +247,8 @@ int64_t GetPosition(void* context)
   SMBContext* ctx = (SMBContext*)context;
   if (ctx->fd == -1)
     return 0;
-  CSMB::Get().Init();
-  PLATFORM::CLockObject lock(CSMB::Get());
+  CSMB2::Get().Init();
+  PLATFORM::CLockObject lock(CSMB2::Get());
   int64_t pos = smbc_lseek(ctx->fd, 0, SEEK_CUR);
   if ( pos < 0 )
     return 0;
@@ -261,8 +261,8 @@ int64_t Seek(void* context, int64_t iFilePosition, int iWhence)
   if (ctx->fd == -1)
     return -1;
 
-  PLATFORM::CLockObject lock(CSMB::Get()); // Init not called since it has to be "inited" by now
-  CSMB::Get().SetActivityTime();
+  PLATFORM::CLockObject lock(CSMB2::Get()); // Init not called since it has to be "inited" by now
+  CSMB2::Get().SetActivityTime();
   int64_t pos = smbc_lseek(ctx->fd, iFilePosition, iWhence);
 
   if ( pos < 0 )
@@ -281,12 +281,12 @@ bool Exists(VFSURL* url)
   if (!IsValidFile(url->filename))
     return false;
 
-  CSMB::Get().Init();
+  CSMB2::Get().Init();
   std::string strFileName = GetAuthenticatedPath(url);
 
   struct stat info;
 
-  CSMB& smb = CSMB::Get();
+  CSMB2& smb = CSMB2::Get();
 
   PLATFORM::CLockObject lock(smb);
   int iResult = smbc_stat(strFileName.c_str(), &info);
@@ -299,9 +299,9 @@ bool Exists(VFSURL* url)
 
 int Stat(VFSURL* url, struct __stat64* buffer)
 {
-  CSMB::Get().Init();
+  CSMB2::Get().Init();
   std::string strFileName = GetAuthenticatedPath(url);
-  PLATFORM::CLockObject lock(CSMB::Get());
+  PLATFORM::CLockObject lock(CSMB2::Get());
 
   struct stat tmpBuffer = {0};
   int iResult = smbc_stat(strFileName.c_str(), &tmpBuffer);
@@ -329,23 +329,23 @@ int IoControl(void* context, XFILE::EIoControl request, void* param)
 
 void ClearOutIdle()
 {
-  CSMB::Get().CheckIfIdle();
+  CSMB2::Get().CheckIfIdle();
 }
 
 void DisconnectAll()
 {
-  CSMB::Get().Deinit();
+  CSMB2::Get().Deinit();
 }
 
 bool DirectoryExists(VFSURL* url)
 {
-  PLATFORM::CLockObject lock(CSMB::Get());
-  CSMB::Get().Init();
+  PLATFORM::CLockObject lock(CSMB2::Get());
+  CSMB2::Get().Init();
 
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename,
                                                   url->username, url->password);
 
   XBMC->FreeString((char*)url->username);
@@ -370,13 +370,13 @@ void FreeDirectory(void* items)
 bool CreateDirectory(VFSURL* url)
 {
   bool success = true;
-  PLATFORM::CLockObject lock(CSMB::Get());
-  CSMB::Get().Init();
+  PLATFORM::CLockObject lock(CSMB2::Get());
+  CSMB2::Get().Init();
 
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename,
                                                   url->username, url->password);
 
   XBMC->FreeString((char*)url->username);
@@ -392,13 +392,13 @@ bool CreateDirectory(VFSURL* url)
 
 bool RemoveDirectory(VFSURL* url)
 {
-  PLATFORM::CLockObject lock(CSMB::Get());
-  CSMB::Get().Init();
+  PLATFORM::CLockObject lock(CSMB2::Get());
+  CSMB2::Get().Init();
 
   if (!XBMC->AuthenticateURL(url))
     return false;
 
-  std::string strFileName = CSMB::Get().URLEncode(url->domain, url->hostname, url->filename,
+  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename,
                                                   url->username, url->password);
 
   XBMC->FreeString((char*)url->username);
@@ -442,8 +442,8 @@ int Write(void* context, const void* lpBuf, int64_t uiBufSize)
   int dwNumberOfBytesWritten = 0;
 
   // lpBuf can be safely casted to void* since xmbc_write will only read from it.
-  CSMB::Get().Init();
-  PLATFORM::CLockObject lock(CSMB::Get());
+  CSMB2::Get().Init();
+  PLATFORM::CLockObject lock(CSMB2::Get());
   dwNumberOfBytesWritten = smbc_write(ctx->fd, (void*)lpBuf, uiBufSize);
 
   return (int)dwNumberOfBytesWritten;
@@ -451,10 +451,10 @@ int Write(void* context, const void* lpBuf, int64_t uiBufSize)
 
 bool Delete(VFSURL* url)
 {
-  CSMB::Get().Init();
+  CSMB2::Get().Init();
   std::string strFile = GetAuthenticatedPath(url);
 
-  PLATFORM::CLockObject lock(CSMB::Get());
+  PLATFORM::CLockObject lock(CSMB2::Get());
 
   int result = smbc_unlink(strFile.c_str());
 
@@ -466,10 +466,10 @@ bool Delete(VFSURL* url)
 
 bool Rename(VFSURL* url, VFSURL* url2)
 {
-  CSMB::Get().Init();
+  CSMB2::Get().Init();
   std::string strFile = GetAuthenticatedPath(url);
   std::string strFileNew = GetAuthenticatedPath(url2);
-  PLATFORM::CLockObject lock(CSMB::Get());
+  PLATFORM::CLockObject lock(CSMB2::Get());
 
   int result = smbc_rename(strFile.c_str(), strFileNew.c_str());
 
@@ -481,14 +481,14 @@ bool Rename(VFSURL* url, VFSURL* url2)
 
 void* OpenForWrite(VFSURL* url, bool bOverWrite)
 { 
-  CSMB::Get().Init();
+  CSMB2::Get().Init();
   // we can't open files like smb://file.f or smb://server/file.f
   // if a file matches the if below return false, it can't exist on a samba share.
   if (!IsValidFile(url->filename))
     return NULL;
 
   std::string strFileName = GetAuthenticatedPath(url);
-  PLATFORM::CLockObject lock(CSMB::Get());
+  PLATFORM::CLockObject lock(CSMB2::Get());
 
   SMBContext* result = new SMBContext;
   if (bOverWrite)
