@@ -145,11 +145,50 @@ static std::string GetAuthenticatedPath(VFSURL* url)
   return result;
 }
 
+static bool IsValidFile(const std::string& strFileName)
+{
+  if (strFileName.find('/') == std::string::npos || /* doesn't have sharename */
+      strFileName.substr(strFileName.size()-2) == "/." || /* not current folder */
+      strFileName.substr(strFileName.size()-3) == "/..")  /* not parent folder */
+    return false;
+  return true;
+}
+
 void* Open(VFSURL* url)
 {
   CSMB::Get().Init();
   CSMB::Get().AddActiveConnection();
-
+  if (!IsValidFile(url->filename))
+  {
+    XBMC->Log(ADDON::LOG_INFO, "FileSmb->Open: Bad URL : '%s'",url->redacted);
+    return NULL;
+  }
+  int fd = -1;
+  std::string filename = GetAuthenticatedPath(url);
+  PLATFORM::CLockObject lock(CSMB::Get());
+  fd = smbc_open(filename.c_str(), O_RDONLY, 0);
+  if (fd == -1)
+  {
+    XBMC->Log(ADDON::LOG_INFO, "FileSmb->Open: Unable to open file : '%s'\nunix_err:'%x' error : '%s'", url->redacted, errno, strerror(errno));
+    return NULL;
+  }
+  XBMC->Log(ADDON::LOG_DEBUG,"CSmbFile::Open - opened %s, fd=%d", url->filename, fd);
+  struct stat tmpBuffer;
+  if (smbc_stat(filename.c_str(), &tmpBuffer) < 0)
+  {
+    smbc_close(fd);
+    return NULL;
+  }
+  int64_t ret = smb_lseek(fd, 0, SEEK_SET);
+  if (ret < 0)
+  {
+    smbc_close(fd);
+    return NULL;
+  }
+  SMBContext* result = new SMBContext;
+  result->fd = fd;
+  result->size = tmpBuffer.st_size;
+  return result;
 }
 
 bool Close(void* context)
@@ -233,15 +272,6 @@ int64_t Seek(void* context, int64_t iFilePosition, int iWhence)
   }
 
   return (int64_t)pos;
-}
-
-static bool IsValidFile(const std::string& strFileName)
-{
-  if (strFileName.find('/') == std::string::npos || /* doesn't have sharename */
-      strFileName.substr(strFileName.size()-2) == "/." || /* not current folder */
-      strFileName.substr(strFileName.size()-3) == "/..")  /* not parent folder */
-    return false;
-  return true;
 }
 
 bool Exists(VFSURL* url)

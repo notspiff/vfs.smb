@@ -11,7 +11,7 @@
     point="xbmc.vfs"
     protocols="smb"
     files="true"
-    directories="true"
+    directories="false"
     library_linux="vfs.smb.so"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="en">SMB support</summary>
