@@ -286,7 +286,9 @@ bool Exists(VFSURL* url)
 
   struct stat info;
 
-  PLATFORM::CLockObject lock(CSMB::Get());
+  CSMB& smb = CSMB::Get();
+
+  PLATFORM::CLockObject lock(smb);
   int iResult = smbc_stat(strFileName.c_str(), &info);
 
   if (iResult < 0)
