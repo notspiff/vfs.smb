@@ -21,6 +21,7 @@
 #include "SMB.h"
 #include <xbmc/libXBMC_addon.h>
 #include <libsmbclient.h>
+#include <iostream>
 
 extern ADDON::CHelper_libXBMC_addon* XBMC;
 
