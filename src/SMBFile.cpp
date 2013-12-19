@@ -546,4 +546,9 @@ bool UpdateItem(void* context)
   return false;
 }
 
+int GetChunkSize(void* context)
+{
+  return 1;
+}
+
 }
