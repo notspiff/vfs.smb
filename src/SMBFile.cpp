@@ -179,7 +179,7 @@ void* Open(VFSURL* url)
     smbc_close(fd);
     return NULL;
   }
-  int64_t ret = smb_lseek(fd, 0, SEEK_SET);
+  int64_t ret = smbc_lseek(fd, 0, SEEK_SET);
   if (ret < 0)
   {
     smbc_close(fd);
