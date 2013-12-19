@@ -49,7 +49,7 @@ public:
 
   int32_t ConvertUnixToNT(int error);
 protected:
-  CSMB();
+  CSMB(int yo);
   CSMB(const CSMB&);
   virtual ~CSMB();
   const CSMB& operator=(const CSMB&);
