@@ -31,10 +31,10 @@
 struct _SMBCCTX;
 typedef _SMBCCTX SMBCCTX;
 
-class CSMB : public PLATFORM::CMutex
+class CSMB2 : public PLATFORM::CMutex
 {
 public:
-  static CSMB& Get();
+  static CSMB2& Get();
   void Init();
   void Deinit();
   void Purge();
@@ -49,8 +49,8 @@ public:
 
   int32_t ConvertUnixToNT(int error);
 protected:
-  CSMB();
-  virtual ~CSMB();
+  CSMB2();
+  virtual ~CSMB2();
 
   SMBCCTX *m_context;
   std::string m_strLastHost;

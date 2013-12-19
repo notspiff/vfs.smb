@@ -43,26 +43,26 @@ SMBCSRV* xb_smbc_cache(SMBCCTX* c, const char* server, const char* share, const 
   return orig_cache(c, server, share, workgroup, username);
 }
 
-CSMB& CSMB::Get()
+CSMB2& CSMB2::Get()
 {
-  static CSMB instance;
+  static CSMB2 instance;
 
   return instance;
 }
 
-CSMB::CSMB()
+CSMB2::CSMB2()
 {
   std::cout << "created yo" << std::endl;
   m_IdleTimeout = 0;
   m_context = NULL;
 }
 
-CSMB::~CSMB()
+CSMB2::~CSMB2()
 {
   Deinit();
 }
 
-void CSMB::Deinit()
+void CSMB2::Deinit()
 {
   PLATFORM::CLockObject lock(*this);
 
@@ -76,13 +76,13 @@ void CSMB::Deinit()
     }
     catch(...)
     {
-      XBMC->Log(ADDON::LOG_ERROR,"exception on CSMB::Deinit. errno: %d", errno);
+      XBMC->Log(ADDON::LOG_ERROR,"exception on CSMB2::Deinit. errno: %d", errno);
     }
     m_context = NULL;
   }
 }
 
-void CSMB::Init()
+void CSMB2::Init()
 {
   PLATFORM::CLockObject lock(*this);
   if (!m_context)
@@ -177,7 +177,7 @@ void CSMB::Init()
   m_IdleTimeout = 180;
 }
 
-void CSMB::Purge()
+void CSMB2::Purge()
 {
 }
 
@@ -191,7 +191,7 @@ void CSMB::Purge()
  *
  * We try to avoid lot's of purge commands because it slow samba down.
  */
-void CSMB::PurgeEx(const std::string& hostname, const std::string& filename)
+void CSMB2::PurgeEx(const std::string& hostname, const std::string& filename)
 {
   PLATFORM::CLockObject lock(*this);
   std::string strShare = filename.substr(0, filename.find('/'));
@@ -223,7 +223,7 @@ static void Tokenize(const std::string& str, std::vector<std::string>& tokens,
 
 
 
-std::string CSMB::URLEncode(const std::string& domain, 
+std::string CSMB2::URLEncode(const std::string& domain, 
                             const std::string& hostname, const std::string& filename,
                             const std::string& username, const std::string& password)
 {
@@ -274,7 +274,7 @@ std::string CSMB::URLEncode(const std::string& domain,
 }
 
 /* This is called from CApplication::ProcessSlow() and is used to tell if smbclient have been idle for too long */
-void CSMB::CheckIfIdle()
+void CSMB2::CheckIfIdle()
 {
 /* We check if there are open connections. This is done without a lock to not halt the mainthread. It should be thread safe as
    worst case scenario is that m_OpenConnections could read 0 and then changed to 1 if this happens it will enter the if wich will lead to another check, wich is locked.  */
@@ -296,7 +296,7 @@ void CSMB::CheckIfIdle()
   }
 }
 
-void CSMB::SetActivityTime()
+void CSMB2::SetActivityTime()
 {
   /* Since we get called every 500ms from ProcessSlow we limit the tick count to 180 */
   /* That means we have 2 ticks per second which equals 180/2 == 90 seconds */
@@ -305,13 +305,13 @@ void CSMB::SetActivityTime()
 
 /* The following two function is used to keep track on how many Opened files/directories there are.
    This makes the idle timer not count if a movie is paused for example */
-void CSMB::AddActiveConnection()
+void CSMB2::AddActiveConnection()
 {
   PLATFORM::CLockObject lock(*this);
   m_OpenConnections++;
 }
 
-void CSMB::AddIdleConnection()
+void CSMB2::AddIdleConnection()
 {
   PLATFORM::CLockObject lock(*this);
   m_OpenConnections--;
