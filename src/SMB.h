@@ -35,7 +35,6 @@ class CSMB : public PLATFORM::CMutex
 {
 public:
   static CSMB& Get();
-  virtual ~CSMB();
   void Init();
   void Deinit();
   void Purge();
@@ -51,6 +50,9 @@ public:
   int32_t ConvertUnixToNT(int error);
 protected:
   CSMB();
+  CSMB(const CSMB&);
+  virtual ~CSMB();
+  const CSMB& operator=(const CSMB&);
 
   SMBCCTX *m_context;
   std::string m_strLastHost;
