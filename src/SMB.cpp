@@ -52,7 +52,6 @@ CSMB2& CSMB2::Get()
 
 CSMB2::CSMB2()
 {
-  std::cout << "created yo" << std::endl;
   m_IdleTimeout = 0;
   m_context = NULL;
 }

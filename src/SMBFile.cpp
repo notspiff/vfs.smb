@@ -306,18 +306,21 @@ int Stat(VFSURL* url, struct __stat64* buffer)
   struct stat tmpBuffer = {0};
   int iResult = smbc_stat(strFileName.c_str(), &tmpBuffer);
 
-  memset(buffer, 0, sizeof(struct __stat64));
-  buffer->st_dev = tmpBuffer.st_dev;
-  buffer->st_ino = tmpBuffer.st_ino;
-  buffer->st_mode = tmpBuffer.st_mode;
-  buffer->st_nlink = tmpBuffer.st_nlink;
-  buffer->st_uid = tmpBuffer.st_uid;
-  buffer->st_gid = tmpBuffer.st_gid;
-  buffer->st_rdev = tmpBuffer.st_rdev;
-  buffer->st_size = tmpBuffer.st_size;
-  buffer->st_atime = tmpBuffer.st_atime;
-  buffer->st_mtime = tmpBuffer.st_mtime;
-  buffer->st_ctime = tmpBuffer.st_ctime;
+  if (buffer)
+  {
+    memset(buffer, 0, sizeof(struct __stat64));
+    buffer->st_dev = tmpBuffer.st_dev;
+    buffer->st_ino = tmpBuffer.st_ino;
+    buffer->st_mode = tmpBuffer.st_mode;
+    buffer->st_nlink = tmpBuffer.st_nlink;
+    buffer->st_uid = tmpBuffer.st_uid;
+    buffer->st_gid = tmpBuffer.st_gid;
+    buffer->st_rdev = tmpBuffer.st_rdev;
+    buffer->st_size = tmpBuffer.st_size;
+    buffer->st_atime = tmpBuffer.st_atime;
+    buffer->st_mtime = tmpBuffer.st_mtime;
+    buffer->st_ctime = tmpBuffer.st_ctime;
+  }
 
   return iResult;
 }
@@ -358,13 +361,50 @@ bool DirectoryExists(VFSURL* url)
   return (info.st_mode & S_IFDIR) ? true : false;
 }
 
-void* GetDirectory(VFSURL* url, VFSDirEntry** items, int* num_items)
+void* GetDirectory(VFSURL* url, VFSDirEntry** items,
+                   int* num_items, VFSCallbacks* callbacks)
 {
-  return NULL;
+  CSMB2::Get().AddActiveConnection();
+
+  PLATFORM::CLockObject lock(CSMB2::Get());
+  CSMB2::Get().Init();
+  lock.Unlock();
+
+  if (!XBMC->AuthenticateURL(url))
+    return NULL;
+
+  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename,
+                                                   url->username, url->password);
+  // remove the / or \ at the end. the samba library does not strip them off
+  // don't do this for smb:// !!
+  std::string s = strFileName;
+  int len = s.length();
+  if (len > 1 && s.at(len - 2) != '/' &&
+      (s.at(len - 1) == '/' || s.at(len - 1) == '\\'))
+  {
+    s.erase(len - 1, 1);
+  }
+
+  XBMC->Log(ADDON::LOG_DEBUG, "%s - Using authentication url %s", __FUNCTION__, url->redacted);
+  lock.Lock();
+  int fd = smbc_opendir(s.c_str());
+  lock.Unlock();
+
+  while (fd < 0) 
+  {
+    XBMC->Log(ADDON::LOG_DEBUG, "Errors! FIXME!");
+  }
+  if (fd < 0)
+  {
+    XBMC->Log(ADDON::LOG_ERROR, "SMBDirectory->GetDirectory: Unable to open directory : '%s'\nunix_err:'%x' error : '%s'", url->redacted, errno, strerror(errno));
+    return NULL;
+  }
+  
 }
 
 void FreeDirectory(void* items)
 {
+  CSMB2::Get().AddIdleConnection();
 }
 
 bool CreateDirectory(VFSURL* url)
