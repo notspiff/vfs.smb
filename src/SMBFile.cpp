@@ -392,7 +392,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
 
   while (1)//fd < 0) /* only to avoid goto in following code */
   {
-    errno = ENOENT;
+    errno = EACCES;
     char cError[1024];
     if (errno == EACCES)
     {
