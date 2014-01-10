@@ -370,8 +370,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
   CSMB2::Get().Init();
   lock.Unlock();
 
-  if (!XBMC->AuthenticateURL(url))
-    return NULL;
+  XBMC->AuthenticateURL(url);
 
   std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname,
                                                    url->filename,
