@@ -418,6 +418,8 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
     XBMC->Log(ADDON::LOG_ERROR, "SMBDirectory->GetDirectory: Unable to open directory : '%s'\nunix_err:'%x' error : '%s'", url->redacted, errno, strerror(errno));
     return NULL;
   }
+
+  return NULL;
 }
 
 void FreeDirectory(void* items)
