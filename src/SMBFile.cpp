@@ -396,7 +396,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
     char cError[1024];
     if (errno = EACCES)
     {
-      callbacks->RequireAuthentication(url->url);
+      callbacks->RequireAuthentication(callbacks->ctx, url->url);
       break;
     }
     if (errno == ENODEV || errno == ENOENT)
@@ -409,7 +409,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
       strcpy(cError,strerror(errno));
 
     char* str257 = XBMC->GetLocalizedString(257);
-    callbacks->SetErrorDialog(str257, cError);
+    callbacks->SetErrorDialog(callbacks->ctx, str257, cError);
     XBMC->FreeString(str257);
     break;
   }
