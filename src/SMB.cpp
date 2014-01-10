@@ -233,8 +233,11 @@ std::string CSMB2::URLEncode(const std::string& domain,
   if(!domain.empty())
   {
     char* encoded = XBMC->URLEncode(domain.c_str());
-    flat += encoded;
-    XBMC->FreeString(encoded);
+    if (encoded)
+    {
+      flat += encoded;
+      XBMC->FreeString(encoded);
+    }
     flat += ";";
   }
 
@@ -243,8 +246,11 @@ std::string CSMB2::URLEncode(const std::string& domain,
   if(!username.empty() /* || url.GetPassWord().length() > 0 */)
   {
     char* encoded = XBMC->URLEncode(username.c_str());
-    flat += encoded;
-    XBMC->FreeString(encoded);
+    if (encoded)
+    {
+      flat += encoded;
+      XBMC->FreeString(encoded);
+    }
     flat += ":";
     encoded = XBMC->URLEncode(password.c_str());
     if (encoded)
@@ -255,8 +261,11 @@ std::string CSMB2::URLEncode(const std::string& domain,
     flat += "@";
   }
   char* encoded = XBMC->URLEncode(hostname.c_str());
-  flat += encoded;
-  XBMC->FreeString(encoded);
+  if (encoded)
+  {
+    flat += encoded;
+    XBMC->FreeString(encoded);
+  }
 
   /* okey sadly since a slash is an invalid name we have to tokenize */
   std::vector<std::string> parts;
@@ -266,8 +275,11 @@ std::string CSMB2::URLEncode(const std::string& domain,
   {
     flat += "/";
     char* encoded = XBMC->URLEncode(it->c_str());
-    flat += encoded;
-    XBMC->FreeString(encoded);
+    if (encoded)
+    {
+      flat += encoded;
+      XBMC->FreeString(encoded);
+    }
   }
 
   /* okey options should go here, thou current samba doesn't support any */
