@@ -390,9 +390,8 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
   int fd = smbc_opendir(s.c_str());
   lock.Unlock();
 
-  while (1)//fd < 0) /* only to avoid goto in following code */
+  while (fd < 0) /* only to avoid goto in following code */
   {
-    errno = EACCES;
     char cError[1024];
     if (errno == EACCES)
     {
