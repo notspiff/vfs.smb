@@ -409,7 +409,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
       strcpy(cError,strerror(errno));
 
     char* str257 = XBMC->GetLocalizedString(257);
-    callbacks->SetErrorDialog(callbacks->ctx, str257, cError);
+    callbacks->SetErrorDialog(callbacks->ctx, str257, cError, NULL, NULL);
     XBMC->FreeString(str257);
     break;
   }
