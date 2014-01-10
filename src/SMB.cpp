@@ -247,8 +247,11 @@ std::string CSMB2::URLEncode(const std::string& domain,
     XBMC->FreeString(encoded);
     flat += ":";
     encoded = XBMC->URLEncode(password.c_str());
-    flat += encoded;
-    XBMC->FreeString(encoded);
+    if (encoded)
+    {
+      flat += encoded;
+      XBMC->FreeString(encoded);
+    }
     flat += "@";
   }
   char* encoded = XBMC->URLEncode(hostname.c_str());
