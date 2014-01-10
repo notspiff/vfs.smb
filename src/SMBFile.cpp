@@ -373,7 +373,8 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
   if (!XBMC->AuthenticateURL(url))
     return NULL;
 
-  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname, url->filename,
+  std::string strFileName = CSMB2::Get().URLEncode(url->domain, url->hostname,
+                                                   url->filename,
                                                    url->username, url->password);
   // remove the / or \ at the end. the samba library does not strip them off
   // don't do this for smb:// !!
@@ -390,16 +391,33 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
   int fd = smbc_opendir(s.c_str());
   lock.Unlock();
 
-  while (fd < 0) 
+  while (fd < 0) /* only to avoid goto in following code */
   {
-    XBMC->Log(ADDON::LOG_DEBUG, "Errors! FIXME!");
+    char cError[1024];
+    if (errno = EACCES)
+    {
+      callbacks->RequireAuthentication(url->url);
+      break;
+    }
+    if (errno == ENODEV || errno == ENOENT)
+    {
+      char* str770 = XBMC->GetLocalizedString(770);
+      sprintf(cError, str770, errno);
+      XBMC->FreeString(str770);
+    }
+    else
+      strcpy(cError,strerror(errno));
+
+    char* str257 = XBMC->GetLocalizedString(257);
+    callbacks->SetErrorDialog(str257, cError);
+    XBMC->FreeString(str257);
+    break;
   }
   if (fd < 0)
   {
     XBMC->Log(ADDON::LOG_ERROR, "SMBDirectory->GetDirectory: Unable to open directory : '%s'\nunix_err:'%x' error : '%s'", url->redacted, errno, strerror(errno));
     return NULL;
   }
-  
 }
 
 void FreeDirectory(void* items)
