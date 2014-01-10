@@ -394,7 +394,7 @@ void* GetDirectory(VFSURL* url, VFSDirEntry** items,
   {
     errno = ENOENT;
     char cError[1024];
-    if (errno = EACCES)
+    if (errno == EACCES)
     {
       callbacks->RequireAuthentication(callbacks->ctx, url->url);
       break;
